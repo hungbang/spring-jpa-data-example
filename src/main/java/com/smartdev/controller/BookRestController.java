@@ -4,6 +4,9 @@ import com.smartdev.builder.AuthorBuilder;
 import com.smartdev.builder.BookBuilder;
 import com.smartdev.entity.Author;
 import com.smartdev.entity.Book;
+import com.smartdev.model.BookRequestParam;
+import com.smartdev.model.BookResponseParam;
+import com.smartdev.service.AuthorService;
 import com.smartdev.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,59 +20,54 @@ import java.util.Arrays;
  */
 
 @RestController
-@RequestMapping("/books")
+@RequestMapping("/api/v1/books")
 public class BookRestController {
 
 
     @Autowired
     private BookService bookService;
 
+    @Autowired
+    private AuthorService authorService;
+
     //request list book
     @GetMapping
-    public ResponseEntity<?> getAllBook(){
+    public ResponseEntity<?> getAllBook() {
         return null;
     }
 
     //request 1 book
     @GetMapping("/{id}")
-    public void getBook(@PathVariable("id") Long id){
+    public void getBook(@PathVariable("id") Long id) {
 
     }
 
     //Create book
     @PostMapping
-    public ResponseEntity<?> updateBook(@RequestBody Book book){
-        try{
-            if(book == null){
-                book = createBook();
-            }
+    public ResponseEntity<?> createBook(@RequestBody BookRequestParam param) {
+        try {
+
+            Author author = authorService.getAuthorById(new Long(1));
+            Book book = BookBuilder.aBook().withId(param.getId())
+                    .withName(param.getName()).withAuthors(Arrays.asList(author)).build();
             Book savedBook = bookService.saveBook(book);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedBook);
-        }catch (Exception e){
+            BookResponseParam bookResponseParam = BookResponseParam
+                    .BookResponseParamBuilder
+                    .aBookResponseParam()
+                    .withId(String.valueOf(savedBook.getId()))
+                    .withName(savedBook.getName())
+                    .withAuthorName(author.getName())
+                    .build();
+            return ResponseEntity.status(HttpStatus.CREATED).body(bookResponseParam);
+        } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
 
     }
 
-    private Book createBook() {
-
-        Author author = AuthorBuilder.anAuthor()
-                .withId(new Long(1))
-                .withAddress("da nang")
-                .withName("John")
-                .build();
-        Book book = BookBuilder.aBook()
-                .withId(new Long(1))
-                .withName("Programming Language")
-                .withAuthors(Arrays.asList(author)).build();
-
-        return book;
-    }
-
-
     //remove book
     @DeleteMapping
-    public void deleteBook(){
+    public void deleteBook() {
 
     }
 
