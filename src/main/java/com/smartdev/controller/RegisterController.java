@@ -1,7 +1,10 @@
 package com.smartdev.controller;
 
+import com.smartdev.entity.CustomGroup;
 import com.smartdev.entity.CustomUser;
 import com.smartdev.model.RegisterParam;
+import com.smartdev.model.RegisterResponse;
+import com.smartdev.service.GroupService;
 import com.smartdev.service.impl.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,6 +24,9 @@ public class RegisterController {
 
     @Autowired
     private CustomUserDetailsService customUserService;
+
+    @Autowired
+    private GroupService groupService;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -38,8 +44,13 @@ public class RegisterController {
         CustomUser customUser = new CustomUser();
         customUser.setUserName(username);
         customUser.setPassword(passwordEncoder.encode(password));
+        CustomGroup customGroup = groupService.getGroupByName(registerParam.getGroup());
+        customUser.setCustomGroup(customGroup);
         customUserService.saveCustomUser(customUser);
-        return ResponseEntity.status(HttpStatus.CREATED).body(customUser);
+        RegisterResponse registerResponse = new RegisterResponse();
+        registerResponse.setUsername(customUser.getUserName());
+        registerResponse.setRole(customUser.getCustomGroup().getGroupName());
+        return ResponseEntity.status(HttpStatus.CREATED).body(registerResponse);
     }
 
 }
