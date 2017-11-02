@@ -47,6 +47,10 @@ public class BookRestController {
     public ResponseEntity<?> createBook(@RequestBody BookRequestParam param) {
         try {
 
+            Book bookSaved = bookService.getBookById(param.getId());
+
+            if(bookSaved !=  null)
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
             Author author = authorService.getAuthorById(new Long(1));
             Book book = BookBuilder.aBook().withId(param.getId())
                     .withName(param.getName()).withAuthors(Arrays.asList(author)).build();
